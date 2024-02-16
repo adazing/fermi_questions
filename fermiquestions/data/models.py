@@ -23,7 +23,7 @@ class Question(models.Model):
     answer = models.IntegerField()
     # number of times the question is done
     experience = models.IntegerField()
-    # number of times the skill is done
+    # number right vs number wrong (positive = more right, negative = more wrong)
     skill = models.IntegerField()
 
 
