@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block bodycontent %}
+    <div class="card">
+        <div class="card-body">
+            <h1>Repository: {{repository.name}}</h1>        
+            <h4>Add more questions:</h4>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type = "hidden" name="repository_id" value = "{{repository.id}}">
+                {{ form|crispy}}
+                <input type="submit" value="Add" class="btn btn-primary">
+            </form>
+            <hr>
+            <div class="btn-group">
+                <a href="{% url 'repository_view' repository.id %}" class="btn btn-primary">Files</a>
+                <a href="{% url 'repository_view_w_questions' repository.id %}" class="btn btn-primary active" aria-current="page">Questions</a>
+            </div>
+        </div>
+    </div>
+    <p id="info-block">
+    <div id="questions-block">
+        {% comment %} {% for q in repository_questions %}
+        <div class="card m-3">
+            <div class="card-body" style="background-color:{% if q.experience < 0 %} #de3737 {% elif q.experience > 0 %} #429654 {% else %} #4a4a4a {% endif %}">
+                <div class="card-body" style="color:white;">
+                {{q.query}} <br> {{q.answer}}
+                <form class="delete-question-form" method="post" action="{% url 'delete_question' %}">
+                    {% csrf_token %}
+                    <input type = "hidden" name="question_id" value = "{{q.id}}">
+                    <input type="submit" class="btn btn-danger" value="Delete"/>
+                </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %} {% endcomment %}
+    </div>
+    <button id="load-more" class="btn btn-primary">Load More</button>
+</p>
+{% endblock %}
+{% block scriptcontent %}
+// let menu_select = document.getElementById("menu_select");
+// let info_block = document.getElementById("info-block");
+// function changeInfo(){
+//    if (menu_select.value == 0){
+//
+//    }
+//}
+
+
+// DUE TO LOAD MORE STUFF NOT BEING LOADED YET
+document.addEventListener('DOMContentLoaded', function() {
+    var deleteForms = document.querySelectorAll('.delete-question-form');
+
+    deleteForms.forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission behavior
+
+            var formData = new FormData(form);
+            console.log(formData);
+            var xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Handle success
+                    console.log('Question deleted successfully');
+
+                    // Remove the parent card element
+                    var card = form.closest('.card');
+                    if (card) {
+                    card.remove();
+                    }
+                } else {
+                    // Handle error
+                    console.error('Error deleting question:', xhr.statusText);
+                }
+            };
+            
+            xhr.onerror = function() {
+                // Handle error
+                console.error('Request failed');
+            };
+
+            xhr.send(formData);
+
+            return false;
+        });
+    });
+});
+
+function load_more(){
+    var repositoryId = {{ repository.id }};
+    var offset = document.querySelectorAll('.card').length-1; // Calculate offset based on already loaded questions
+    var url = `/load-more-questions/${repositoryId}/${offset}/`;
+    
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        var container = document.getElementById('questions-block');
+        data.questions.forEach(q => {
+            var card = document.createElement('div');
+            card.classList.add('card', 'm-3');
+            card.innerHTML = `
+            <div class="card m-3">
+                <div class="card-body" style="background-color:${q.color}">
+                    <div class="card-body" style="color:white;">
+                    ${q.query} <br> ${q.answer}
+                    <form class="delete-question-form" method="post" action="{% url 'delete_question' %}">
+                        {% csrf_token %}
+                        <input type = "hidden" name="question_id" value = "${q.id}">
+                        <input type="submit" class="btn btn-danger" value="Delete"/>
+                    </form>
+                    </div>
+                </div>
+            </div>`;
+            container.appendChild(card);
+        });
+      })
+      .catch(error => console.error('Error:', error));
+}
+
+document.getElementById('load-more').addEventListener('click', function() {
+    load_more();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    load_more();
+});
+
+
+
+{% endblock %}

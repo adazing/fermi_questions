@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block bodycontent %}
+    {% for r in repositories %}
+    <p>{{ r.name }}</p>
+    {% endfor %}
+{% endblock %}

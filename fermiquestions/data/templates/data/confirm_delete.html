@@ -1,0 +1,13 @@
+{% extends 'main.html' %}
+{% load crispy_forms_tags %}
+
+    {% block bodycontent %}
+        <div class="formblock">
+            <p class="h4">Are you sure you want to delete {{item}}?</p>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form|crispy}}
+                <input type="submit" value="OK" class="btn btn-primary">
+            </form>
+        </div>
+    {% endblock %}

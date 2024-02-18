@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block bodycontent %}
+    <div class="card">
+        <div class="card-body">
+            <h1>Repository: {{repository.name}}</h1>        
+            <h4>Add more files:</h4>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form|crispy}}
+                <input type="submit" value="Add" class="btn btn-primary">
+            </form>
+            <hr>
+            <div class="btn-group">
+                <a href="{% url 'repository_view' repository.id %}" class="btn btn-primary active" aria-current="page">Files</a>
+                <a href="{% url 'repository_view_w_questions' repository.id %}" class="btn btn-primary">Questions</a>
+                
+            </div>
+
+        </div>
+    </div>
+    <p id="info-block">
+        <div id="files-block">
+        {% for f in repository_files %}
+        <div class="card">
+            <div class="card-body">
+            {{f.name}}
+            <form class="delete-file-form" method="post" action="{% url 'delete_file' %}">
+                {% csrf_token %}
+                <input type = "hidden" name="file_id" value = "{{f.id}}">
+                <input type="submit" class="btn btn-danger" value="Delete"/>
+            </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    </p>
+{% endblock %}
+{% block scriptcontent %}
+// let menu_select = document.getElementById("menu_select");
+// let info_block = document.getElementById("info-block");
+// function changeInfo(){
+//    if (menu_select.value == 0){
+//
+//    }
+//}
+document.addEventListener('DOMContentLoaded', function() {
+    var deleteForms = document.querySelectorAll('.delete-file-form');
+
+    deleteForms.forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission behavior
+
+            var formData = new FormData(form);
+            var xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Handle success
+                    console.log('File deleted successfully');
+
+                    // Remove the parent card element
+                    var card = form.closest('.card');
+                    if (card) {
+                        card.remove();
+                    }
+                } else {
+                    // Handle error
+                    console.error('Error deleting file:', xhr.statusText);
+                }
+            };
+            
+            xhr.onerror = function() {
+                // Handle error
+                console.error('Request failed');
+            };
+
+            xhr.send(formData);
+
+            return false;
+        });
+    });
+});
+
+
+{% endblock %}
