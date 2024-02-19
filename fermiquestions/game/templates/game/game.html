@@ -27,19 +27,19 @@
 <h1>Game for Repository {{ repository.name }}</h1>
 <a href="{% url 'reset_game' repository.id %}" class="btn btn-primary">Reset Game</a>
 <div class="card m-3">
-    <div class="card-body" id="score-block">
+    <div class="card-body h5" id="score-block">
         
     </div>
-    <div class="card-body" id="num-of-problems-block">
+    <div class="card-body h5" id="num-of-problems-block">
         
     </div>
 </div>
 <div class="card m-3">
-    <div class="card-body" id="question-block">
+    <div class="card-body h4" id="question-block">
     </div>
 </div>
 <div class="card m-3">
-    <div class="card-body hoverme" id="info-block">
+    <div class="card-body hoverme h5" id="info-block" style="color:black;">
     </div>
 </div>
 {% endblock %}
@@ -63,7 +63,7 @@ function confetti(element) {
         for (var i = 0; i < maxElements; i++) {
             var styles = 'transform: translate3d(' + (random(500) - 250) + 'px, ' + (random(200) - 150) + 'px, 0) rotate(' + random(360) + 'deg);' +
                 'background: hsla(' + random(360) + ',100%,50%,1);' +
-                'animation: bang 700ms ease-out forwards;' +
+                'animation: bang 2000ms ease-out forwards;' +
                 'opacity: 0;';
 
             var e = document.createElement("i");
@@ -142,8 +142,8 @@ function load_more(){
         form.action = "{% url 'check_question_answer' 1 %}".replace("1/", "")+data.question.id+"/";
         form.innerHTML = `
         {% csrf_token %}
-        <input type = "number" name="answer" required />
-        <input type="submit" class="btn btn-primary" value="Submit"/>`;
+        <input type = "number" name="answer" class="form-control m-4" required />
+        <input type="submit" class="btn btn-primary m-4" value="Submit"/>`;
         form.addEventListener('submit', function(event) {
             check_question_answer(event, form);
         });
