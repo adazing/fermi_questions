@@ -10,3 +10,5 @@ class Game(models.Model):
     previous_question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, blank=True)
 
     total_score = models.IntegerField()
+    
+    questions_done = models.IntegerField()

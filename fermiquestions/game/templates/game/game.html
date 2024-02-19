@@ -19,13 +19,21 @@
       background: red;
       opacity: 0;
     }
-  
   }
 {% endblock %}
 
 {% block bodycontent %}
 
 <h1>Game for Repository {{ repository.name }}</h1>
+<a href="{% url 'reset_game' repository.id %}" class="btn btn-primary">Reset Game</a>
+<div class="card m-3">
+    <div class="card-body" id="score-block">
+        
+    </div>
+    <div class="card-body" id="num-of-problems-block">
+        
+    </div>
+</div>
 <div class="card m-3">
     <div class="card-body" id="question-block">
     </div>
@@ -84,13 +92,21 @@ function check_question_answer(event, form){
     xhr.onload = function() {
         if (xhr.status === 200) {
             var info_container = document.getElementById("info-block");
+            var score_block = document.getElementById("score-block");
+            var num_of_problems_block = document.getElementById("num-of-problems-block");
             var response_data = JSON.parse(xhr.responseText);
             var result = response_data["result"];
             var actual_answer = response_data["actual_answer"];
+            var color = response_data["color"];
+            var total_score = response_data["total_score"];
+            var questions_done = response_data["questions_done"];
             info_container.innerHTML = "Actual Answer: "+actual_answer.toString()+", Points Awarded: "+result.toString();
             console.log(xhr.responseText);
+            score_block.innerHTML = "Total Score: " + total_score;
+            num_of_problems_block.innerHTML = "Total # of Questions Done: "+questions_done;
             // Handle success
             console.log('success!');
+            info_container.style.backgroundColor=color;
             if (result == 5){
                 confetti(info_container);
             }
@@ -126,7 +142,7 @@ function load_more(){
         form.action = "{% url 'check_question_answer' 1 %}".replace("1/", "")+data.question.id+"/";
         form.innerHTML = `
         {% csrf_token %}
-        <input type = "number" name="answer" />
+        <input type = "number" name="answer" required />
         <input type="submit" class="btn btn-primary" value="Submit"/>`;
         form.addEventListener('submit', function(event) {
             check_question_answer(event, form);
@@ -135,11 +151,25 @@ function load_more(){
     });
 }
 
+function get_initial_data() {
+    var url = "{% url 'get_initial_info' repository.id %}";
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            var score_block = document.getElementById("score-block");
+            var num_of_problems_block = document.getElementById("num-of-problems-block");
+            score_block.innerHTML = "Total Score: " + data.total_score;
+            num_of_problems_block.innerHTML = "Total # of Questions Done: " + data.questions_done;
+        })
+}
+
 {% comment %} document.getElementById('load-more').addEventListener('click', function() {
     load_more();
 }); {% endcomment %}
 
 document.addEventListener('DOMContentLoaded', function() {
+    get_initial_data();
     load_more();
 });
 

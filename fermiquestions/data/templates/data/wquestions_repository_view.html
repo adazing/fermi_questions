@@ -131,14 +131,13 @@ function load_more(){
         data.questions.forEach(q => {
             var card = document.createElement('div');
             card.classList.add('card', 'm-3');
+            card.style.backgroundColor = q.color;
             card.innerHTML = `
-            <div class="card m-3">
-                <div class="card-body" style="background-color:${q.color}">
+                <div class="card-body">
                     <div class="card-body" style="color:white;">
                     ${q.query} <br> ${q.answer}
                     </div>
-                </div>
-            </div>`;
+                </div>`;
             var form = document.createElement('form');
             form.classList.add("delete-question-form");
             form.method = "POST";

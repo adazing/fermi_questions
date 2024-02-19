@@ -7,6 +7,7 @@
         <div class="card-body" style="background-color:${q.color}">
             <p>{{ r.name }}</p>
             <a href = "{% url 'repository_view' r.id %}" class="btn btn-primary">Edit</a>
+            <a href = "{% url 'game' r.id %}" class="btn btn-primary">Play</a>
             <a class="btn btn-danger" href="{% url 'delete_repository' r.id %}">Delete</a>
         </div>
     </div>

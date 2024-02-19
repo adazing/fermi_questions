@@ -157,10 +157,14 @@ def load_more_questions(request, repository_id, offset):
     print(questions)
     question_data=[]
     for q in questions:
-        color = '#4a4a4a'
-        if q.experience<0:
+        # haven't tested the question yet
+        if q.experience == 0 and q.skill == 0:
+            color = '#4a4a4a'
+        # got it wrong all the time
+        elif q.experience > 0 and q.skill == 0:
             color = '#de3737'
-        elif q.experience>0:
+        # got it wrong at least once but not all the time
+        else:
             color = '#429654'
         
         question_data.append({"query":q.query, "color":color, "answer":q.answer, "id":q.id})
