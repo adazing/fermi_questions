@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% block bodycontent %}
+    <h3>View Your Repositories:</h3>
+    <a href="{% url 'create_repository' %}" class="btn btn-primary">Create New Repository</a>
     {% for r in repositories %}
-    <p>{{ r.name }}</p>
+    <div class="card m-3">
+        <div class="card-body" style="background-color:${q.color}">
+            <p>{{ r.name }}</p>
+            <a href = "{% url 'repository_view' r.id %}" class="btn btn-primary">Edit</a>
+            <a class="btn btn-danger" href="{% url 'delete_repository' r.id %}">Delete</a>
+        </div>
+    </div>
     {% endfor %}
 {% endblock %}

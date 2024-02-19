@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block stylecontent %}
+@keyframes bang {
+    from {
+      transform: translate3d(0,0,0);
+      opacity: 1;
+    }
+  }
+  .hoverme {
+    i {
+      position: absolute;
+      display: block;
+      left: 50%;
+      top: 0;
+      width: 3px;
+      height: 8px;
+      background: red;
+      opacity: 0;
+    }
+  
+  }
+{% endblock %}
+
+{% block bodycontent %}
+
+<h1>Game for Repository {{ repository.name }}</h1>
+<div class="card m-3">
+    <div class="card-body" id="question-block">
+    </div>
+</div>
+<div class="card m-3">
+    <div class="card-body hoverme" id="info-block">
+    </div>
+</div>
+{% endblock %}
+
+{% block scriptcontent %}
+
+function confetti(element) {
+    // Remove existing <i> elements if needed
+        var existingIElements = element.querySelectorAll('i');
+        if (existingIElements.length > 0) {
+            existingIElements.forEach(function(element) {
+                element.parentNode.removeChild(element);
+            });
+        }
+
+        function random(max) {
+            return Math.random() * (max - 0) + 0;
+        }
+        var c = document.createDocumentFragment();
+        var maxElements = 100; // Maximum number of elements to create
+        for (var i = 0; i < maxElements; i++) {
+            var styles = 'transform: translate3d(' + (random(500) - 250) + 'px, ' + (random(200) - 150) + 'px, 0) rotate(' + random(360) + 'deg);' +
+                'background: hsla(' + random(360) + ',100%,50%,1);' +
+                'animation: bang 700ms ease-out forwards;' +
+                'opacity: 0;';
+
+            var e = document.createElement("i");
+            e.style.cssText = styles;
+            c.appendChild(e);
+        }
+        element.appendChild(c);
+}
+
+{% comment %} document.querySelectorAll('button').forEach(function(button) {
+    button.addEventListener('click', function() {
+        confetti(event, button);
+    });
+}); {% endcomment %}
+  
+
+function check_question_answer(event, form){
+    event.preventDefault(); // Prevent default form submission behavior
+
+    var formData = new FormData(form);
+    console.log(formData);
+    var xhr = new XMLHttpRequest();
+    xhr.open(form.method, form.action, true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            var info_container = document.getElementById("info-block");
+            var response_data = JSON.parse(xhr.responseText);
+            var result = response_data["result"];
+            var actual_answer = response_data["actual_answer"];
+            info_container.innerHTML = "Actual Answer: "+actual_answer.toString()+", Points Awarded: "+result.toString();
+            console.log(xhr.responseText);
+            // Handle success
+            console.log('success!');
+            if (result == 5){
+                confetti(info_container);
+            }
+        } else {
+            // Handle error
+            console.error('Error:', xhr.statusText);
+        }
+    };
+    
+    xhr.onerror = function() {
+        // Handle error
+        console.error('Request failed');
+    };
+
+    xhr.send(formData);
+
+    load_more();
+    return false;
+
+}
+
+function load_more(){
+    // var repositoryId = {{ repository.id }};
+    var url = "{% url 'generate_next_question' repository.id %}";
+    
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        var container = document.getElementById('question-block');
+        container.innerHTML = data.question.query;
+        var form = document.createElement('form');
+        form.method = "POST";
+        form.action = "{% url 'check_question_answer' 1 %}".replace("1/", "")+data.question.id+"/";
+        form.innerHTML = `
+        {% csrf_token %}
+        <input type = "number" name="answer" />
+        <input type="submit" class="btn btn-primary" value="Submit"/>`;
+        form.addEventListener('submit', function(event) {
+            check_question_answer(event, form);
+        });
+        container.appendChild(form);
+    });
+}
+
+{% comment %} document.getElementById('load-more').addEventListener('click', function() {
+    load_more();
+}); {% endcomment %}
+
+document.addEventListener('DOMContentLoaded', function() {
+    load_more();
+});
+
+{% endblock %}

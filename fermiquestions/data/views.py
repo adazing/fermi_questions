@@ -45,6 +45,7 @@ def create_repository(request):
         if form.is_valid():
             # create repository
             Repository.objects.create(name=form.cleaned_data.get("name"))
+            return redirect('home')
     context = {"form":form}
     return render(request, "data/create_repository.html", context)
 
@@ -167,7 +168,6 @@ def load_more_questions(request, repository_id, offset):
     print(question_data)
     return JsonResponse({'questions': question_data})
 
-# delete files
 
 # file view to see all the questions and what questions get wrong the most
 

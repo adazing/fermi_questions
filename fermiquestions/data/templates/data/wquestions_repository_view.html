@@ -39,16 +39,45 @@
 </p>
 {% endblock %}
 {% block scriptcontent %}
-// let menu_select = document.getElementById("menu_select");
-// let info_block = document.getElementById("info-block");
-// function changeInfo(){
-//    if (menu_select.value == 0){
-//
-//    }
-//}
 
 
-// DUE TO LOAD MORE STUFF NOT BEING LOADED YET
+//function to delete STUFF
+function deleteStuff(event, form){
+    event.preventDefault(); // Prevent default form submission behavior
+
+    var formData = new FormData(form);
+    console.log(formData);
+    var xhr = new XMLHttpRequest();
+    xhr.open(form.method, form.action, true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            // Handle success
+            console.log('Question deleted successfully');
+
+            // Remove the parent card element
+            var card = form.closest('.card');
+            if (card) {
+            card.remove();
+            }
+        } else {
+            // Handle error
+            console.error('Error deleting question:', xhr.statusText);
+        }
+    };
+    
+    xhr.onerror = function() {
+        // Handle error
+        console.error('Request failed');
+    };
+
+    xhr.send(formData);
+
+    return false;
+}
+
+{% comment %} // DUE TO LOAD MORE STUFF NOT BEING LOADED YET
 document.addEventListener('DOMContentLoaded', function() {
     var deleteForms = document.querySelectorAll('.delete-question-form');
 
@@ -88,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         });
     });
-});
+}); {% endcomment %}
 
 function load_more(){
     var repositoryId = {{ repository.id }};
@@ -107,14 +136,23 @@ function load_more(){
                 <div class="card-body" style="background-color:${q.color}">
                     <div class="card-body" style="color:white;">
                     ${q.query} <br> ${q.answer}
-                    <form class="delete-question-form" method="post" action="{% url 'delete_question' %}">
-                        {% csrf_token %}
-                        <input type = "hidden" name="question_id" value = "${q.id}">
-                        <input type="submit" class="btn btn-danger" value="Delete"/>
-                    </form>
                     </div>
                 </div>
             </div>`;
+            var form = document.createElement('form');
+            form.classList.add("delete-question-form");
+            form.method = "POST";
+            form.action = "{% url 'delete_question' %}";
+            form.innerHTML = `
+                {% csrf_token %}
+                <input type = "hidden" name="question_id" value = "${q.id}">
+                <input type="submit" class="btn btn-danger" value="Delete"/>`;
+            form.addEventListener('submit', function(event) {
+                deleteStuff(event, form);
+            });
+            console.log(form);
+            console.log(card);
+            card.appendChild(form);
             container.appendChild(card);
         });
       })
